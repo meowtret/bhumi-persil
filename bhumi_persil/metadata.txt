@@ -4,7 +4,7 @@ qgisMinimumVersion=3.16
 supportsQt6=True
 description=Show the BHUMI ATR/BPN land parcel (persil) layer in QGIS as a map layer, with no extra program to run.
 about=Adds the BHUMI ATR/BPN parcel layer to QGIS as an XYZ tile layer. A small tile server runs inside QGIS (127.0.0.1 only), so no separate program is needed. The result is a raster image, not a shapefile, and parcel attributes cannot be clicked. UNOFFICIAL visual aid: not a product or service of ATR/BPN and not affiliated with it. The layer is for orientation only and must not be used as a basis for determining boundaries, rights, or legal decisions; use BHUMI or the official ATR/BPN services for official data. Please use it reasonably (do not pull very large areas at once). Based on the idea of BHUMI Connector ArcMap by Al Qadri.
-version=1.0.3
+version=1.0.4
 author=Alfian
 email=alfianq2@gmail.com
 homepage=https://github.com/meowtret/bhumi-persil
@@ -14,7 +14,8 @@ category=Web
 tags=bhumi,atr,bpn,persil,parcel,cadastre,land,indonesia,xyz,tile
 experimental=True
 icon=icon.svg
-changelog=1.0.3 - Retry automatically when BHUMI answers HTTP 429/502/503/504; fewer parallel requests; failed tiles are not cached.
+changelog=1.0.4 - Code cleanup for the QGIS security scan (no silent exception handling, secure random source for retry jitter); no change in behavior.
+    1.0.3 - Retry automatically when BHUMI answers HTTP 429/502/503/504; fewer parallel requests; failed tiles are not cached.
     1.0.2 - Added the unofficial-tool notice; author name updated.
     1.0.1 - Improved diagnosis dialog and toolbar handling.
     1.0.0 - First release.

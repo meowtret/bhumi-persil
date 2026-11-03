@@ -13,10 +13,11 @@ Berdasarkan BHUMI Connector ArcMap v3.3.0 oleh Al Qadri.
 """
 import http.cookiejar
 import json
+import logging
 import math
 import os
 import re
-import random
+import secrets
 import threading
 import time
 import urllib.error
@@ -82,6 +83,8 @@ def looks_like_image(ctype, body):
             or body[:3] == b"\xff\xd8\xff")
 
 
+LOG = logging.getLogger(__name__)
+_JITTER = secrets.SystemRandom()  # jitter jeda ulang; bukan untuk keamanan
 RETRY_STATUS = (429, 502, 503, 504)
 
 
@@ -122,8 +125,8 @@ class TileService:
     def log(self, msg):
         try:
             self._log(msg)
-        except Exception:
-            pass
+        except Exception as exc:  # logger milik pemanggil tidak boleh mematikan server
+            LOG.debug("log callback gagal: %s", exc)
 
     def _bump(self, key, n=1):
         with self._lock:
@@ -179,7 +182,6 @@ class TileService:
             return op
 
     def _http_get(self, opener, url):
-        last = None
         net_try = http_try = 0
         while True:
             try:
@@ -193,7 +195,7 @@ class TileService:
                 ctype = exc.headers.get("Content-Type", "") if exc.headers else ""
                 if exc.code in RETRY_STATUS and http_try < self.http_retries:
                     # server BHUMI sedang sibuk (mis. 502 Bad Gateway): tunggu lalu coba lagi
-                    wait = self.backoff * (2 ** http_try) * (0.75 + 0.5 * random.random())
+                    wait = self.backoff * (2 ** http_try) * (0.75 + 0.5 * _JITTER.random())
                     try:
                         ra = float(exc.headers.get("Retry-After", "")) if exc.headers else 0
                         wait = max(wait, min(ra, 10.0))
@@ -205,7 +207,6 @@ class TileService:
                     continue
                 return exc.code, ctype, body
             except Exception as exc:  # jaringan, timeout, SSL
-                last = exc
                 if net_try >= self.retries:
                     raise UpstreamError("Tidak bisa menghubungi BHUMI: %s" % exc)
                 net_try += 1
@@ -392,12 +393,12 @@ class TileService:
         if httpd is not None:
             try:
                 httpd.shutdown()
-            except Exception:
-                pass
+            except (OSError, RuntimeError) as exc:
+                LOG.debug("shutdown server: %s", exc)
             try:
                 httpd.server_close()
-            except Exception:
-                pass
+            except OSError as exc:
+                LOG.debug("server_close: %s", exc)
         if thread is not None:
             thread.join(timeout=3)
         self.log("Server tile berhenti")

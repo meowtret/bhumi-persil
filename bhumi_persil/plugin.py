@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Plugin QGIS: BHUMI Persil (kompatibel QGIS 3.x/Qt5 dan QGIS 4/Qt6)."""
+import logging
 import os
 import platform
 import re
@@ -8,7 +9,7 @@ import threading
 import traceback
 import urllib.parse
 
-from qgis.PyQt.QtCore import QObject, QUrl, pyqtSignal, qVersion
+from qgis.PyQt.QtCore import QUrl, pyqtSignal, qVersion
 from qgis.PyQt.QtNetwork import QNetworkRequest
 from qgis.PyQt.QtGui import QIcon, QImage
 from qgis.PyQt.QtWidgets import (QApplication, QDialog, QHBoxLayout, QPlainTextEdit,
@@ -23,6 +24,8 @@ from qgis.core import (Qgis, QgsApplication, QgsBlockingNetworkRequest, QgsCoord
 
 from .tile_server import (TileService, UpstreamError, looks_like_image, lonlat_to_tile,
                           upstream_tile_url)
+
+LOG = logging.getLogger(__name__)
 
 PLUGIN_NAME = "BHUMI Persil"
 LAYER_TITLE = "Persil BHUMI ATR/BPN"
@@ -94,13 +97,13 @@ class DiagnosisDialog(QDialog):
         try:
             L.append("QGIS        : %s | Python %s | Qt %s | %s"
                      % (Qgis.version(), sys.version.split()[0], qVersion(), platform.platform()))
-        except Exception:
-            pass
+        except Exception as exc:
+            L.append("QGIS        : (versi tidak terbaca: %s)" % exc)
         try:
             enabled = QgsSettings().value("proxy/proxyEnabled", False)
             L.append("Proxy QGIS  : %s" % ("AKTIF (localhost bisa ikut terproxy)" if str(enabled).lower() == "true" else "mati"))
-        except Exception:
-            pass
+        except Exception as exc:
+            L.append("Proxy QGIS  : (tidak terbaca: %s)" % exc)
         try:
             ms = canvas.mapSettings()
             flag = canvas.renderFlag() if hasattr(canvas, "renderFlag") else True
@@ -139,8 +142,8 @@ class DiagnosisDialog(QDialog):
         if info["bhumi_layers"]:
             try:
                 canvas.refreshAllLayers()   # paksa QGIS menggambar ulang -> harus meminta tile
-            except Exception:
-                pass
+            except Exception as exc:
+                L.append("Peringatan   : gagal memaksa kanvas menggambar ulang (%s)" % exc)
         return info
 
     def run(self):
@@ -171,8 +174,8 @@ class DiagnosisDialog(QDialog):
         try:
             svc = self.plugin.service
             emit("=== Lingkungan QGIS ===")
-            for l in info["lines"]:
-                emit(l)
+            for line in info["lines"]:
+                emit(line)
             emit("")
             emit("=== Server tile plugin ===")
             if svc is None or not svc.running:
@@ -316,8 +319,9 @@ class BhumiPersilPlugin:
     def unload(self):
         try:
             QgsProject.instance().readProject.disconnect(self._on_project_read)
-        except Exception:
-            pass
+        except (TypeError, RuntimeError) as exc:
+            # sinyal belum terhubung atau proyek sudah dihancurkan saat QGIS menutup
+            LOG.debug("readProject.disconnect dilewati: %s", exc)
         for act, on_toolbar in self.actions:
             self.iface.removePluginWebMenu(self.menu, act)
             if on_toolbar:
@@ -373,8 +377,8 @@ class BhumiPersilPlugin:
             p = tr.transform(center)
             if -180 <= p.x() <= 180 and -85 <= p.y() <= 85 and (94 <= p.x() <= 142 and -12 <= p.y() <= 7):
                 return p.x(), p.y()
-        except Exception:
-            pass
+        except Exception as exc:
+            LOG.debug("Pusat kanvas tidak bisa dihitung, pakai Palu: %s", exc)
         return PALU
 
     def _on_project_read(self, *args):

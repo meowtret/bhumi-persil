@@ -1,4 +1,4 @@
-BHUMI Persil - plugin QGIS v1.0.3
+BHUMI Persil - plugin QGIS v1.0.4
 =================================
 
 PASANG
