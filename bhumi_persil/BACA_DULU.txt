@@ -1,0 +1,45 @@
+BHUMI Persil - plugin QGIS v1.0.3
+=================================
+
+PASANG
+  QGIS > Plugins > Manage and Install Plugins > Install from ZIP
+  pilih bhumi_persil.zip > Install Plugin.
+  Kalau plugin tidak langsung aktif: tab "Installed", centang "BHUMI Persil".
+  (Plugin ditandai experimental; kalau tidak muncul di daftar, buka tab Settings
+  dan centang "Show also experimental plugins".)
+
+PAKAI
+  1. Klik ikon BHUMI Persil di toolbar, atau menu Web > BHUMI Persil >
+     Tambah Layer Persil BHUMI.
+  2. Zoom ke area yang diinginkan. Persil mulai tampak jelas pada skala
+     sekitar 1:136.000 atau lebih besar (mis. zoom ke Palu).
+  3. Transparansi layer diatur lewat Layer Properties > Transparency.
+
+MENU LAIN (Web > BHUMI Persil)
+  - Diagnosis BHUMI...   : memeriksa QGIS (versi, proxy, Render, status layer),
+                           koneksi ke BHUMI, jalur QGIS -> server lokal, dan berapa
+                           tile yang sudah diminta QGIS. Kalau layer kosong: tambah
+                           layer, zoom ke area yang ada persilnya, jalankan ini,
+                           lalu kirim hasilnya (tombol "Salin hasil").
+  - Bersihkan cache tile : menghapus tile tersimpan (cache otomatis 24 jam).
+
+CATATAN
+  - Kalau ada kotak kosong di peta: server BHUMI kadang sibuk (HTTP 502). Sejak v1.0.3
+    plugin mengulang otomatis sampai 3 kali dengan jeda. Bila masih kosong, geser/zoom
+    sedikit atau tunggu beberapa menit; tile yang gagal tidak disimpan di cache.
+  - Server tile kecil berjalan di dalam QGIS (127.0.0.1, port 8765; kalau terpakai
+    otomatis 8766-8774). Tidak perlu menjalankan program lain.
+  - Hasilnya GAMBAR (raster), bukan shapefile. Atribut persil tidak bisa diklik.
+  - Log: panel Log Messages > tab "BHUMI Persil".
+  - Berdasarkan BHUMI Connector ArcMap v3.3.0 oleh Al Qadri.
+
+PERHATIAN (BACA)
+  - Plugin ini ALAT BANTU VISUAL TIDAK RESMI. Bukan produk, layanan, atau
+    kerja sama dengan Kementerian ATR/BPN, dan tidak terafiliasi dengan BHUMI.
+  - Gambar persil hanya untuk melihat gambaran letak bidang. Jangan dipakai
+    sebagai dasar penetapan batas, hak, atau keputusan hukum. Untuk data
+    resmi, gunakan BHUMI atau layanan resmi ATR/BPN.
+  - Tile diambil langsung dari layanan publik BHUMI melalui internet Anda
+    sendiri. Pakai secara wajar (jangan menarik area sangat luas sekaligus).
+    Layanan dapat berubah sewaktu-waktu sehingga plugin bisa berhenti bekerja.
+  - Tanpa jaminan. Semua risiko pemakaian ada pada pengguna.
